@@ -39,12 +39,25 @@ function! neomake#statusline#ResetCounts() abort
         let r = neomake#statusline#ResetCountsForBuf(bufnr) || r
     endfor
     let s:loclist_counts = {}
+    let s:running_status = {}
+    let g:status = s:running_status
     return r
 endfunction
 
 function! neomake#statusline#AddLoclistCount(buf, item) abort
     let s:loclist_counts[a:buf] = get(s:loclist_counts, a:buf, {})
     return s:setCount(s:loclist_counts[a:buf], a:item, a:buf)
+endfunction
+
+function! neomake#statusline#SetRunningStatus(win, buf, status)
+    let s:running_status[a:win] = get(s:running_status, a:win, {})
+    let s:running_status[a:win][a:buf] = get(a:, 'status', '')
+endfunction
+
+function! neomake#statusline#GetRunningStatus()
+    let win = winnr()
+    let buf = bufnr('%')
+    return get(get(s:running_status, win, {}), buf, '')
 endfunction
 
 function! neomake#statusline#AddQflistCount(item) abort
