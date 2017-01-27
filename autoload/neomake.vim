@@ -226,7 +226,7 @@ function! s:MakeJob(make_id, options) abort
             endif
 
             let r = jobinfo.id
-            call neomake#statusline#SetRunningStatus(winnr(), a:options.bufnr, '...')
+            call neomake#statusline#SetRunningStatus(tabpagenr(), winnr(), a:options.bufnr, '...')
         else
             call neomake#utils#DebugMessage('Running synchronously')
             call neomake#utils#LoudMessage('Starting: '.argv, jobinfo)
@@ -1095,8 +1095,9 @@ function! s:exit_handler(job_id, data, event_type) abort
     endif
     if get(jobinfo, 'canceled')
         call neomake#utils#DebugMessage('exit: job was canceled.', jobinfo)
+        let [t, w] = s:GetTabWinForMakeId(jobinfo.make_id)
+        call neomake#statusline#SetRunningStatus(t, w, jobinfo.bufnr, '')
         call s:CleanJobinfo(jobinfo)
-        call neomake#statusline#SetRunningStatus(maker.winnr, jobinfo.bufnr, '')
         return
     endif
     let maker = jobinfo.maker
@@ -1149,7 +1150,8 @@ function! s:exit_handler(job_id, data, event_type) abort
         call neomake#utils#DebugMessage(printf(
                     \ '%s: completed with exit code %d.',
                     \ maker.name, status), jobinfo)
-        call neomake#statusline#SetRunningStatus(maker.winnr, jobinfo.bufnr, '')
+        let [t, w] = s:GetTabWinForMakeId(jobinfo.make_id)
+        call neomake#statusline#SetRunningStatus(t, w, jobinfo.bufnr, '')
     endif
 
     if has_pending_output || s:has_pending_output(jobinfo)

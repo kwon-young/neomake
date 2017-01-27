@@ -19,6 +19,8 @@ function! neomake#statusline#ResetCountsForBuf(...) abort
                     \ 'file_mode': 1,
                     \ 'bufnr': bufnr})
     endif
+    let s:running_status = {}
+    let g:status = s:running_status
     return r
 endfunction
 
@@ -30,6 +32,8 @@ function! neomake#statusline#ResetCountsForProject(...) abort
                     \ 'file_mode': 0,
                     \ 'bufnr': bufnr('%')})
     endif
+    let s:running_status = {}
+    let g:status = s:running_status
     return r
 endfunction
 
@@ -49,15 +53,21 @@ function! neomake#statusline#AddLoclistCount(buf, item) abort
     return s:setCount(s:loclist_counts[a:buf], a:item, a:buf)
 endfunction
 
-function! neomake#statusline#SetRunningStatus(win, buf, status)
-    let s:running_status[a:win] = get(s:running_status, a:win, {})
-    let s:running_status[a:win][a:buf] = get(a:, 'status', '')
+function! neomake#statusline#SetRunningStatus(tab, win, buf, status)
+    let s:running_status[a:tab] = get(s:running_status, a:tab, {})
+    let s:running_status[a:tab][a:win] = get(s:running_status[a:tab], a:win, {})
+    let s:running_status[a:tab][a:win][a:buf] = get(a:, 'status', '')
 endfunction
 
 function! neomake#statusline#GetRunningStatus()
+    let tab = tabpagenr()
     let win = winnr()
     let buf = bufnr('%')
-    return get(get(s:running_status, win, {}), buf, '')
+    if exists("s:running_status")
+      return get(get(get(s:running_status, tab, {}), win, {}), buf, '')
+    else
+      return ''
+    endif
 endfunction
 
 function! neomake#statusline#AddQflistCount(item) abort
